@@ -2,7 +2,7 @@
   "name": "Kelly's Cookbook",
   "short_name": "Cookbook",
   "description": "Your personal recipe collection",
-  "start_url": "/cookbook.html",
+ "start_url": "/CookBookV1/cookbook.html",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#d4a574",
