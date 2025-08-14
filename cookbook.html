@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#d4a574">
+    <title>Kelly's Cookbook</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #faf6f0;
+            color: #3a3a3a;
+            line-height: 1.6;
+            font-size: 18px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: #d4a574;
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .backup-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .backup-btn, .restore-btn {
+            background-color: #8B7355;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .backup-btn:hover, .restore-btn:hover {
+            background-color: #6B5745;
+            transform: translateY(-2px);
+        }
+
+        .restore-input {
+            display: none;
+        }
+
+        .search-box {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            width: 300px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .add-recipe-btn {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .add-recipe-btn:hover {
+            background-color: #4cae4c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            background-color: #f5e6d3;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .category-tab {
+            background-color: #e8d5c4;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .category-tab:hover {
+            background-color: #d4a574;
+            color: white;
+        }
+
+        .category-tab.active {
+            background-color: #c19660;
+            color: white;
+            font-weight: bold;
+        }
+
+        .recipe-count {
+            background-color: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+
+        .recipes-container {
+            margin-top: 30px;
+            min-height: 400px;
+        }
+
+        .recipe-card {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .recipe-card:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .recipe-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .recipe-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #c19660;
+        }
+
+        .recipe-expand-icon {
+            font-size: 20px;
+            color: #999;
+        }
+
+        .recipe-details {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .recipe-details.active {
+            display: block;
+        }
+
+        .recipe-section {
+            margin-bottom: 20px;
+        }
+
+        .recipe-section h3 {
+            color: #c19660;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .recipe-content {
+            white-space: pre-wrap;
+            background-color: #faf6f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+
+        .video-links {
+            margin-top: 10px;
+        }
+
+        .video-link {
+            display: inline-block;
+            background-color: #ff0050;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .video-link:hover {
+            background-color: #e60045;
+            transform: translateY(-2px);
+        }
+
+        .recipe-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .edit-btn {
+            background-color: #5bc0de;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background-color: #46b8da;
+        }
+
+        .delete-btn {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #c9302c;
+        }
+
+        /* Modal Form Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #c19660;
+            font-size: 28px;
+        }
+
+        .close-btn {
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+            background: none;
+            border: none;
+        }
+
+        .close-btn:hover {
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .form-group .help-text {
+            font-size: 14px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .video-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .video-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .video-inputs input {
+            flex: 1;
+        }
+
+        .remove-video-btn {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-video-btn {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .save-btn, .cancel-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .save-btn {
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background-color: #4cae4c;
+        }
+
+        .cancel-btn {
+            background-color: #ccc;
+            color: #333;
+        }
+
+        .cancel-btn:hover {
+            background-color: #bbb;
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.success {
+            background-color: #5cb85c;
+        }
+
+        .message.error {
+            background-color: #d9534f;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .no-recipes {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+            font-size: 20px;
+        }
+
+        .pwa-install-banner {
+            display: none;
+            background-color: #5cb85c;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .pwa-install-banner button {
+            background-color: white;
+            color: #5cb85c;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            header {
+                padding: 20px 10px;
+            }
+
+            header h1 {
+                font-size: 2em;
+                margin-bottom: 15px;
+            }
+
+            .header-controls {
+                flex-direction: column;
+                gap: 15px;
+                padding: 0 10px;
+            }
+
+            .search-box {
+                width: 100%;
+                max-width: 350px;
+                font-size: 16px;
+                padding: 14px 20px;
+            }
+
+            .add-recipe-btn {
+                width: 100%;
+                max-width: 350px;
+                font-size: 16px;
+                padding: 14px 20px;
+            }
+
+            .backup-controls {
+                flex-direction: row;
+                width: 100%;
+                padding: 0 10px;
+                gap: 8px;
+            }
+
+            .backup-btn, .restore-btn {
+                flex: 1;
+                font-size: 14px;
+                padding: 12px 10px;
+                justify-content: center;
+                min-height: 44px; /* iOS touch target */
+            }
+
+            .category-tabs {
+                padding: 8px;
+                gap: 8px;
+                margin-top: 15px;
+            }
+
+            .category-tab {
+                font-size: 14px;
+                padding: 10px 15px;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
+
+            .recipe-card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .recipe-name {
+                font-size: 20px;
+                flex: 1;
+                padding-right: 10px;
+            }
+
+            .recipe-header {
+                min-height: 44px;
+                align-items: center;
+            }
+
+            .recipe-expand-icon {
+                font-size: 18px;
+                padding: 10px;
+                min-width: 44px;
+                text-align: center;
+            }
+
+            .recipe-section h3 {
+                font-size: 18px;
+            }
+
+            .recipe-content {
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .video-link {
+                font-size: 14px;
+                padding: 10px 16px;
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .recipe-actions {
+                flex-wrap: wrap;
+            }
+
+            .edit-btn, .delete-btn {
+                flex: 1;
+                min-width: 120px;
+                padding: 12px 20px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .modal-header h2 {
+                font-size: 24px;
+            }
+
+            .close-btn {
+                font-size: 28px;
+                min-width: 44px;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .form-group label {
+                font-size: 16px;
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 14px;
+                min-height: 44px;
+            }
+
+            .form-group textarea {
+                min-height: 120px;
+            }
+
+            .video-inputs {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .video-inputs input {
+                width: 100%;
+                font-size: 16px;
+                padding: 12px;
+                min-height: 44px;
+            }
+
+            .remove-video-btn {
+                padding: 10px 15px;
+                font-size: 14px;
+                min-height: 44px;
+                width: 100%;
+            }
+
+            .add-video-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+                min-height: 44px;
+                width: 100%;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+                gap: 10px;
+            }
+
+            .save-btn, .cancel-btn {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 16px;
+                min-height: 44px;
+            }
+
+            .message {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                font-size: 14px;
+                padding: 12px 16px;
+                text-align: center;
+            }
+
+            .no-recipes {
+                padding: 30px 20px;
+                font-size: 16px;
+            }
+
+            .pwa-install-banner {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .pwa-install-banner button {
+                padding: 10px 16px;
+                font-size: 14px;
+                min-height: 44px;
+                margin: 5px;
+            }
+        }
+
+        /* Very small mobile screens */
+        @media (max-width: 375px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .backup-controls {
+                flex-direction: column;
+            }
+
+            .backup-btn, .restore-btn {
+                width: 100%;
+                max-width: 350px;
+            }
+
+            .category-tab {
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+
+            .recipe-count {
+                font-size: 12px;
+                padding: 2px 6px;
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (max-width: 768px) and (orientation: landscape) {
+            header {
+                padding: 15px 10px;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+                margin-bottom: 10px;
+            }
+
+            .modal-content {
+                max-height: 85vh;
+            }
+        }
+
+        /* Touch-friendly adjustments */
+        @media (pointer: coarse) {
+            button, .category-tab, .video-link, input, select, textarea {
+                min-height: 44px;
+            }
+
+            .recipe-header {
+                min-height: 50px;
+            }
+        }
+
+        /* iOS-specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            input[type="text"],
+            input[type="search"],
+            select,
+            textarea {
+                font-size: 16px; /* Prevents zoom */
+                -webkit-appearance: none;
+                border-radius: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Kelly's Cookbook</h1>
+        <div class="header-controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="Search recipes or ingredients...">
+            <button class="add-recipe-btn" onclick="openAddRecipeModal()">+ Add New Recipe</button>
+        </div>
+        <div class="backup-controls">
+            <button class="backup-btn" onclick="backupRecipes()">
+                💾 Backup Recipes
+            </button>
+            <button class="restore-btn" onclick="document.getElementById('restoreInput').click()">
+                📂 Restore Backup
+            </button>
+            <input type="file" id="restoreInput" class="restore-input" accept=".json" onchange="restoreRecipes(event)">
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="category-tabs" id="categoryTabs"></div>
+        <div class="recipes-container" id="recipesContainer"></div>
+    </div>
+
+    <!-- Recipe Form Modal -->
+    <div class="modal" id="recipeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Recipe</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <form id="recipeForm">
+                <input type="hidden" id="recipeId">
+                
+                <div class="form-group">
+                    <label for="recipeName">Recipe Name *</label>
+                    <input type="text" id="recipeName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipeCategory">Category *</label>
+                    <select id="recipeCategory" required>
+                        <option value="">Select a category...</option>
+                        <option value="Appetizers">Appetizers</option>
+                        <option value="Mains">Mains</option>
+                        <option value="Desserts">Desserts</option>
+                        <option value="Sides">Sides</option>
+                        <option value="Soups">Soups</option>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Drinks">Drinks</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipeIngredients">Ingredients</label>
+                    <textarea id="recipeIngredients" placeholder="Enter each ingredient on a new line"></textarea>
+                    <div class="help-text">Press Enter after each ingredient for a new line</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipeInstructions">Instructions</label>
+                    <textarea id="recipeInstructions" placeholder="Enter each step on a new line"></textarea>
+                    <div class="help-text">Press Enter after each instruction for a new line</div>
+                </div>
+
+                <div class="form-group">
+                    <label>TikTok Videos</label>
+                    <div id="videosList"></div>
+                    <button type="button" class="add-video-btn" onclick="addVideoInput()">+ Add Video Link</button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="save-btn">Save Recipe</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PWA Install Banner -->
+    <div class="pwa-install-banner" id="installBanner">
+        <p>Install Kelly's Cookbook for offline access!</p>
+        <button onclick="installPWA()">Install</button>
+        <button onclick="dismissInstallBanner()">Not Now</button>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'cookbook_recipes';
+        const VERSION_KEY = 'cookbook_version';
+        const CURRENT_VERSION = '1.0.0';
+        const categories = ['Appetizers', 'Mains', 'Desserts', 'Sides', 'Soups', 'Breakfast', 'Drinks'];
+        let recipes = [];
+        let currentCategory = 'Mains';
+        let editingRecipeId = null;
+        let deferredPrompt = null;
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+
+        // PWA Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBanner').style.display = 'block';
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted install prompt');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('installBanner').style.display = 'none';
+                });
+            }
+        }
+
+        function dismissInstallBanner() {
+            document.getElementById('installBanner').style.display = 'none';
+        }
+
+        // Initialize the app
+        async function init() {
+            await loadRecipes();
+            renderCategoryTabs();
+            renderRecipes();
+            
+            // Set up search
+            document.getElementById('searchBox').addEventListener('input', handleSearch);
+            
+            // Set up form submission
+            document.getElementById('recipeForm').addEventListener('submit', handleFormSubmit);
+        }
+
+        // Load recipes from localStorage or initial data
+        async function loadRecipes() {
+            try {
+                // Try to load from localStorage first
+                const storedRecipes = localStorage.getItem(STORAGE_KEY);
+                
+                if (storedRecipes) {
+                    recipes = JSON.parse(storedRecipes);
+                    console.log('Loaded recipes from localStorage');
+                } else {
+                    // Load initial data from recipes.json if exists
+                    try {
+                        const response = await fetch('recipes.json');
+                        if (response.ok) {
+                            const data = await response.json();
+                            recipes = data.recipes || [];
+                            saveRecipes(); // Save to localStorage
+                            console.log('Loaded initial recipes from recipes.json');
+                        }
+                    } catch (error) {
+                        console.log('No initial recipes found, starting fresh');
+                        recipes = [];
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading recipes:', error);
+                recipes = [];
+            }
+        }
+
+        // Save recipes to localStorage
+        function saveRecipes() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
+                localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+                localStorage.setItem('cookbook_lastSaved', new Date().toISOString());
+                showMessage('Recipe saved successfully!', 'success');
+            } catch (error) {
+                console.error('Error saving recipes:', error);
+                showMessage('Error saving recipe. Storage may be full.', 'error');
+            }
+        }
+
+        // Sanitize input to prevent XSS
+        function sanitizeInput(input) {
+            const div = document.createElement('div');
+            div.textContent = input;
+            return div.innerHTML;
+        }
+
+        // Render category tabs
+        function renderCategoryTabs() {
+            const tabsContainer = document.getElementById('categoryTabs');
+            tabsContainer.innerHTML = '';
+            
+            categories.forEach(category => {
+                const count = recipes.filter(r => r.category === category).length;
+                const tab = document.createElement('button');
+                tab.className = `category-tab ${category === currentCategory ? 'active' : ''}`;
+                tab.innerHTML = `${category} <span class="recipe-count">${count}</span>`;
+                tab.onclick = () => {
+                    currentCategory = category;
+                    renderCategoryTabs();
+                    renderRecipes();
+                };
+                tabsContainer.appendChild(tab);
+            });
+        }
+
+        // Render recipes
+        function renderRecipes(recipesToShow = null) {
+            const container = document.getElementById('recipesContainer');
+            container.innerHTML = '';
+            
+            const recipesToDisplay = recipesToShow || 
+                recipes.filter(r => r.category === currentCategory);
+            
+            // Sort alphabetically
+            recipesToDisplay.sort((a, b) => a.name.localeCompare(b.name));
+            
+            if (recipesToDisplay.length === 0) {
+                container.innerHTML = '<div class="no-recipes">No recipes in this category yet. Click "Add New Recipe" to get started!</div>';
+                return;
+            }
+            
+            recipesToDisplay.forEach(recipe => {
+                const recipeCard = createRecipeCard(recipe);
+                container.appendChild(recipeCard);
+            });
+        }
+
+        // Create recipe card element
+        function createRecipeCard(recipe) {
+            const card = document.createElement('div');
+            card.className = 'recipe-card';
+            
+            const isExpanded = localStorage.getItem(`recipe-expanded-${recipe.id}`) === 'true';
+            
+            // Sanitize all user inputs
+            const safeName = sanitizeInput(recipe.name);
+            const safeIngredients = sanitizeInput(recipe.ingredients || '');
+            const safeInstructions = sanitizeInput(recipe.instructions || '');
+            
+            card.innerHTML = `
+                <div class="recipe-header" onclick="toggleRecipe('${recipe.id}')">
+                    <h2 class="recipe-name">${safeName}</h2>
+                    <span class="recipe-expand-icon">${isExpanded ? '▼' : '▶'}</span>
+                </div>
+                <div class="recipe-details ${isExpanded ? 'active' : ''}" id="details-${recipe.id}">
+                    ${recipe.ingredients ? `
+                        <div class="recipe-section">
+                            <h3>Ingredients</h3>
+                            <div class="recipe-content">${safeIngredients}</div>
+                        </div>
+                    ` : ''}
+                    ${recipe.instructions ? `
+                        <div class="recipe-section">
+                            <h3>Instructions</h3>
+                            <div class="recipe-content">${safeInstructions}</div>
+                        </div>
+                    ` : ''}
+                    ${recipe.videos && recipe.videos.length > 0 ? `
+                        <div class="recipe-section">
+                            <h3>Videos</h3>
+                            <div class="video-links">
+                                ${recipe.videos.map(video => `
+                                    <a href="${sanitizeInput(video.link)}" target="_blank" class="video-link">
+                                        🎥 ${sanitizeInput(video.name || 'Watch Video')}
+                                    </a>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div class="recipe-actions">
+                        <button class="edit-btn" onclick="editRecipe('${recipe.id}')">Edit</button>
+                        <button class="delete-btn" onclick="deleteRecipe('${recipe.id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Toggle recipe expansion
+        function toggleRecipe(recipeId) {
+            const details = document.getElementById(`details-${recipeId}`);
+            const isExpanded = details.classList.contains('active');
+            
+            details.classList.toggle('active');
+            localStorage.setItem(`recipe-expanded-${recipeId}`, !isExpanded);
+            
+            // Update icon
+            const card = details.parentElement;
+            const icon = card.querySelector('.recipe-expand-icon');
+            icon.textContent = isExpanded ? '▶' : '▼';
+        }
+
+        // Open add recipe modal
+        function openAddRecipeModal() {
+            editingRecipeId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Recipe';
+            document.getElementById('recipeForm').reset();
+            document.getElementById('videosList').innerHTML = '';
+            addVideoInput(); // Add one video input by default
+            document.getElementById('recipeModal').classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('recipeModal').classList.remove('active');
+            document.getElementById('recipeForm').reset();
+            document.getElementById('videosList').innerHTML = '';
+            editingRecipeId = null;
+        }
+
+        // Add video input
+        function addVideoInput(link = '', name = '') {
+            const videosList = document.getElementById('videosList');
+            const videoSection = document.createElement('div');
+            videoSection.className = 'video-section';
+            
+            const videoId = Date.now();
+            videoSection.innerHTML = `
+                <div class="video-inputs">
+                    <input type="text" placeholder="TikTok link" value="${sanitizeInput(link)}" class="video-link-input">
+                    <input type="text" placeholder="Video name" value="${sanitizeInput(name)}" class="video-name-input">
+                </div>
+                <button type="button" class="remove-video-btn" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            
+            videosList.appendChild(videoSection);
+        }
+
+        // Handle form submission
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('recipeName').value.trim();
+            const category = document.getElementById('recipeCategory').value;
+            
+            if (!name || !category) {
+                showMessage('Please fill in required fields', 'error');
+                return;
+            }
+            
+            // Collect video data
+            const videos = [];
+            const videoSections = document.querySelectorAll('.video-section');
+            videoSections.forEach(section => {
+                const link = section.querySelector('.video-link-input').value.trim();
+                const videoName = section.querySelector('.video-name-input').value.trim();
+                if (link) {
+                    videos.push({ link, name: videoName || 'Video' });
+                }
+            });
+            
+            const recipeData = {
+                id: editingRecipeId || generateId(),
+                name,
+                category,
+                ingredients: document.getElementById('recipeIngredients').value,
+                instructions: document.getElementById('recipeInstructions').value,
+                videos
+            };
+            
+            if (editingRecipeId) {
+                // Update existing recipe
+                const index = recipes.findIndex(r => r.id === editingRecipeId);
+                if (index !== -1) {
+                    recipes[index] = recipeData;
+                }
+            } else {
+                // Add new recipe
+                recipes.push(recipeData);
+            }
+            
+            saveRecipes();
+            renderCategoryTabs();
+            renderRecipes();
+            closeModal();
+        }
+
+        // Edit recipe
+        function editRecipe(recipeId) {
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (!recipe) return;
+            
+            editingRecipeId = recipeId;
+            document.getElementById('modalTitle').textContent = 'Edit Recipe';
+            document.getElementById('recipeName').value = recipe.name;
+            document.getElementById('recipeCategory').value = recipe.category;
+            document.getElementById('recipeIngredients').value = recipe.ingredients || '';
+            document.getElementById('recipeInstructions').value = recipe.instructions || '';
+            
+            // Load videos
+            document.getElementById('videosList').innerHTML = '';
+            if (recipe.videos && recipe.videos.length > 0) {
+                recipe.videos.forEach(video => {
+                    addVideoInput(video.link, video.name);
+                });
+            } else {
+                addVideoInput(); // Add one empty input
+            }
+            
+            document.getElementById('recipeModal').classList.add('active');
+        }
+
+        // Delete recipe
+        function deleteRecipe(recipeId) {
+            if (!confirm('Are you sure you want to delete this recipe?')) {
+                return;
+            }
+            
+            recipes = recipes.filter(r => r.id !== recipeId);
+            saveRecipes();
+            renderCategoryTabs();
+            renderRecipes();
+        }
+
+        // Handle search
+        function handleSearch(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                renderRecipes();
+                return;
+            }
+            
+            const filteredRecipes = recipes.filter(recipe => 
+                recipe.name.toLowerCase().includes(searchTerm) ||
+                (recipe.ingredients && recipe.ingredients.toLowerCase().includes(searchTerm))
+            );
+            
+            renderRecipes(filteredRecipes);
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 3000);
+        }
+
+        // Generate unique ID
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // Backup recipes to JSON file
+        function backupRecipes() {
+            try {
+                // Create backup data
+                const backupData = {
+                    version: CURRENT_VERSION,
+                    exportDate: new Date().toISOString(),
+                    recipeCount: recipes.length,
+                    recipes: recipes
+                };
+
+                // Create filename with date and recipe count
+                const date = new Date();
+                const dateStr = date.toISOString().split('T')[0];
+                const filename = `kellys-recipes-${dateStr}.json (${recipes.length} recipes)`;
+
+                // Create blob and download
+                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showMessage(`Backup created: ${recipes.length} recipes saved!`, 'success');
+            } catch (error) {
+                console.error('Backup error:', error);
+                showMessage('Error creating backup. Please try again.', 'error');
+            }
+        }
+
+        // Restore recipes from JSON file
+        async function restoreRecipes(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+
+                // Validate backup file structure
+                if (!data.recipes || !Array.isArray(data.recipes)) {
+                    throw new Error('Invalid backup file format');
+                }
+
+                // Validate each recipe has required fields
+                const validRecipes = data.recipes.filter(recipe => {
+                    return recipe.id && recipe.name && recipe.category;
+                });
+
+                if (validRecipes.length === 0) {
+                    throw new Error('No valid recipes found in backup');
+                }
+
+                // Confirm restore
+                const confirmMsg = `This will replace all current recipes (${recipes.length}) with ${validRecipes.length} recipes from the backup.\n\nAre you sure you want to continue?`;
+                if (!confirm(confirmMsg)) {
+                    event.target.value = ''; // Reset file input
+                    return;
+                }
+
+                // Restore recipes
+                recipes = validRecipes;
+                saveRecipes();
+                renderCategoryTabs();
+                renderRecipes();
+
+                showMessage(`Successfully restored ${validRecipes.length} recipes!`, 'success');
+                
+                // Reset file input
+                event.target.value = '';
+            } catch (error) {
+                console.error('Restore error:', error);
+                showMessage('Error restoring backup. Please check the file and try again.', 'error');
+                event.target.value = ''; // Reset file input
+            }
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
