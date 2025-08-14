@@ -792,7 +792,7 @@
             <button class="add-recipe-btn" onclick="openAddRecipeModal()">+ Add New Recipe</button>
         </div>
         <div class="backup-controls">
-            <button class="backup-btn" onclick="backupRecipes()">
+            <button class="backup-btn" onclick="backupRecipes().catch(console.error)">
                 💾 Backup Recipes
             </button>
             <button class="restore-btn" onclick="document.getElementById('restoreInput').click()">
@@ -1243,8 +1243,23 @@
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
 
+        // Detect iOS and PWA context
+        function isIOSPWA() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isStandalone = window.navigator.standalone === true || 
+                                window.matchMedia('(display-mode: standalone)').matches ||
+                                window.matchMedia('(display-mode: fullscreen)').matches;
+            return isIOS && isStandalone;
+        }
+
+        // Detect if Web Share API is available and supports files
+        function canUseWebShare() {
+            return navigator.share && navigator.canShare && 
+                   navigator.canShare({ files: [new File([''], 'test.txt')] });
+        }
+
         // Backup recipes to JSON file
-        function backupRecipes() {
+        async function backupRecipes() {
             try {
                 // Create backup data
                 const backupData = {
@@ -1257,24 +1272,62 @@
                 // Create filename with date and recipe count
                 const date = new Date();
                 const dateStr = date.toISOString().split('T')[0];
-                const filename = `kellys-recipes-${dateStr}.json (${recipes.length} recipes)`;
+                const filename = `kellys-recipes-${dateStr}.json`;
 
-                // Create blob and download
-                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                // Create blob
+                const jsonContent = JSON.stringify(backupData, null, 2);
+                const blob = new Blob([jsonContent], { type: 'application/json' });
 
-                showMessage(`Backup created: ${recipes.length} recipes saved!`, 'success');
+                // Use Web Share API for iOS PWA or if available
+                if (isIOSPWA() || canUseWebShare()) {
+                    try {
+                        // Create File object for Web Share API
+                        const file = new File([blob], filename, { type: 'application/json' });
+                        
+                        // Check if we can share files
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Kelly\'s Cookbook Backup',
+                                text: `Backup of ${recipes.length} recipes from Kelly's Cookbook`
+                            });
+                            showMessage(`Backup shared: ${recipes.length} recipes! Save to Files app for safekeeping.`, 'success');
+                        } else {
+                            // Fallback to traditional download if share fails
+                            throw new Error('Web Share not supported for files');
+                        }
+                    } catch (shareError) {
+                        // If user cancels share or error occurs, fall back to download
+                        if (shareError.name !== 'AbortError') {
+                            console.log('Share failed, falling back to download:', shareError);
+                            // Fall through to traditional download
+                            performTraditionalDownload(blob, filename + ` (${recipes.length} recipes)`);
+                        } else {
+                            // User cancelled the share
+                            showMessage('Backup cancelled', 'info');
+                        }
+                    }
+                } else {
+                    // Use traditional download for non-iOS or non-PWA
+                    performTraditionalDownload(blob, filename + ` (${recipes.length} recipes)`);
+                }
             } catch (error) {
                 console.error('Backup error:', error);
                 showMessage('Error creating backup. Please try again.', 'error');
             }
+        }
+
+        // Traditional download method (for desktop and non-iOS)
+        function performTraditionalDownload(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessage(`Backup created: ${recipes.length} recipes saved!`, 'success');
         }
 
         // Restore recipes from JSON file
