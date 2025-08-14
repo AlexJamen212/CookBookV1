@@ -1,9 +1,9 @@
 const CACHE_NAME = 'kellys-cookbook-v1';
 const urlsToCache = [
-  '/cookbook.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/CookBookV1/cookbook.html',
+  '/CookBookV1/manifest.json',
+  '/CookBookV1/icon-192.png',
+  '/CookBookV1/icon-512.png'
 ];
 
 // Install event - cache resources
